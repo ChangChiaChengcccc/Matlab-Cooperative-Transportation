@@ -14,6 +14,14 @@ multirotor.m = 1.15;
 multirotor.J = [0.0131, 0, 0;
                 0, 0.0131, 0;
                 0, 0, 0.0244];
+iris1 = multirotor_dynamics;
+iris2 = multirotor_dynamics;
+payload = multirotor_dynamics;
+system = multirotor_dynamics;
+iris1.m = 3;
+iris2.m = 4;
+payload.m = 5;
+tmp = sys_inertia( iris1, iris2, payload)
 multirotor.d = 0.225;
 multirotor.c_tau = 1.347e-2;
 multirotor.allocation_matrix = cal_allocation_matrix(multirotor.d, multirotor.c_tau);
@@ -75,6 +83,7 @@ for i = 2:length(multirotor.t)
     multirotor.rotor_thrust(:, i) = multirotor.allocation_matrix_inv*control(1:4);
 end
 
+%{
 % plot trajectory and desired trajectory
 figure(1)
 subplot(3, 1, 1)
@@ -201,3 +210,4 @@ set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
 xlabel('$Time(sec)$', 'Interpreter', 'latex')
 legend('$M_{x}$', '$M_{y}$', '$M_{z}$', 'Interpreter', 'latex')
 title('$Moment$ $Control$ $input$ $(N\cdot m)$', 'Interpreter', 'latex')
+%}
