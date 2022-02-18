@@ -20,8 +20,10 @@ classdef multirotor_dynamics
         % states
         x
         v
+        a
         R
         W
+        dW
         % errors
         ex
         ev
