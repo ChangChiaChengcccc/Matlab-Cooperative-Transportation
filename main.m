@@ -6,8 +6,30 @@ close all;
 dt = 0.001;
 sim_t = 20;
 
-
-% initialize parameters
+%% initialize parameters
+% iris1
+iris1 = multirotor_dynamics;
+iris1.m = 1.55;
+iris1.J = [0.03, 0, 0;
+                0, 0.05, 0;
+                0, 0, 0.1];
+iris1.x =[0.6; 0; 0.35];
+% iris2
+iris2 = multirotor_dynamics;
+iris2.m = 1.55;
+iris2.J = [0.03, 0, 0;
+                0, 0.05, 0;
+                0, 0, 0.1];
+iris2.x =[-0.6; 0; 0.35];
+% payload
+payload = multirotor_dynamics;
+payload.m = 0.3;
+payload.J = [0.0031, 0, 0;
+                0, 0.0656, 0;
+                0, 0, 0.0656];
+payload.x =[0; 0; 0.125];
+tmp =  sys_inertia(iris1,iris2,payload)
+% system
 system = multirotor_dynamics;
 system.dt = dt;
 system.sim_t = sim_t;
