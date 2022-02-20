@@ -1,3 +1,5 @@
-function c = test(a)
-    c = a.m
-end
+%quiver3(0,0,0,0,10,0)
+
+a = [1,2,3]
+b = [1,1,1]
+cross(a,b)

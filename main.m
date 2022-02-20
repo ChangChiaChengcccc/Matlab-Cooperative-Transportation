@@ -3,7 +3,7 @@ close all;
 
 % simulation time
 dt = 0.001;
-sim_t = 10;
+sim_t = 30;
 
 %% initialize parameters
 % iris1
@@ -28,19 +28,14 @@ payload.J = [0.0031, 0, 0;
                 0, 0, 0.0656];
 payload.x =[0; 0; 0.125];
 system_inertia =  sys_inertia(iris1,iris2,payload);
+
 % system
 system = multirotor_dynamics;
 system.dt = dt;
 system.sim_t = sim_t;
 system.t = 0:dt:sim_t;
-% system.m = 1.15;
-% system.J = [0.0131, 0, 0;
-%                 0, 0.0131, 0;
-%                 0, 0, 0.0244];
 system.m = system_inertia(1);
 system.J = diag(system_inertia(2:4));
-
-
 system.d = 0.225;
 system.c_tau = 1.347e-2;
 system.allocation_matrix = cal_allocation_matrix(system.d, system.c_tau);
@@ -58,6 +53,10 @@ system.eW = zeros(3, length(system.t));
 system.force_moment = zeros(4, length(system.t));
 system.rotor_thrust = zeros(4, length(system.t));
 
+% initialize iris_dynamics
+iris1_xva = zeros(9, length(system.t));
+iris2_xva = zeros(9, length(system.t));
+
 % initialize states
 system.x(:, 1) = [0; 0; 0];
 system.v(:, 1) = [0; 0; 0];
@@ -73,10 +72,8 @@ ctrl = controller;
 tra = zeros(12, length(system.t));
 traj = trajectory;
 
-% initialize tmp
-iris1_dynamics = zeros(3, length(system.t));
-iris2_dynamics = zeros(3, length(system.t));
 
+%% control loop
 for i = 2:length(system.t)
     t_now = system.t(i);
 
@@ -104,8 +101,8 @@ for i = 2:length(system.t)
     system.dW(:, i) = a_wdot(4:6);
     
     % others dynamics
-    iris1_dynamics(:, i) = iris_dynamics(iris1,system,i);
-    iris2_dynamics(:, i) = iris_dynamics(iris2,system,i);
+    iris1_xva(:, i) = iris_dynamics(iris1,system,i);
+    iris2_xva(:, i) = iris_dynamics(iris2,system,i);
     
     % save the error_ned
     system.ex(:, i) = error(1:3);
@@ -118,16 +115,50 @@ for i = 2:length(system.t)
     system.rotor_thrust(:, i) = system.allocation_matrix_inv*control(1:4);
 end
 %% plot 
-% plot tmp
-% iris1_to_iris2_x = [iris1_dynamics(1,:);iris2_dynamics(1,:)];
-% iris1_to_iris2_y = [iris1_dynamics(2,:);iris2_dynamics(2,:)];
-% iris1_to_iris2_z = [iris1_dynamics(3,:);iris2_dynamics(3,:)];
+% plot dynamics x
+% iris1_to_iris2_x = [iris1_xva(1,:);iris2_xva(1,:)];
+% iris1_to_iris2_y = [iris1_xva(2,:);iris2_xva(2,:)];
+% iris1_to_iris2_z = [iris1_xva(3,:);iris2_xva(3,:)];
 % plot3(iris1_to_iris2_x,iris1_to_iris2_y,iris1_to_iris2_z,'-k')
 % hold on
-plot3(system.x(1, :),system.x(2, :),system.x(3, :),...
-         iris1_dynamics(1,:),iris1_dynamics(2,:),iris1_dynamics(3,:), ...
-         iris2_dynamics(1,:),iris2_dynamics(2,:),iris2_dynamics(3,:));
-grid on
+% figure(8)
+% plot3(system.x(1, :),system.x(2, :),system.x(3, :),...
+%          iris1_xva(1,:),iris1_xva(2,:),iris1_xva(3,:), ...
+%          iris2_xva(1,:),iris2_xva(2,:),iris2_xva(3,:));
+% grid on
+
+%check dynamics a
+% plot3(system.x(1, 24000:30001),system.x(2, 24000:30001),system.x(3, 24000:30001))
+% hold on
+% grid on
+% zlim([0 1.5])
+% quiver3(system.x(1, 24000),system.x(2, 24000),system.x(3, 24000),system.a(1, 24000),system.a(2, 24000),system.a(3, 24000))
+% 
+% plot3(iris1_xva(1,24000:30001),iris1_xva(2,24000:30001),iris1_xva(3,24000:30001))
+% quiver3(iris1_xva(1,24000),iris1_xva(2,24000),iris1_xva(3,24000),iris1_xva(7,24000),iris1_xva(8,24000),iris1_xva(9,24000))
+% 
+% quiver3(system.x(1, 25120),system.x(2, 25120),system.x(3, 25120),system.a(1, 25120),system.a(2, 25120),system.a(3, 25120))
+% quiver3(iris1_xva(1,25120),iris1_xva(2,25120),iris1_xva(3,25120),iris1_xva(7,25120),iris1_xva(8,25120),iris1_xva(9,25120))
+% 
+% quiver3(system.x(1, 26690),system.x(2, 26690),system.x(3, 26690),system.a(1, 26690),system.a(2, 26690),system.a(3, 26690))
+% quiver3(iris1_xva(1,26690),iris1_xva(2,26690),iris1_xva(3,26690),iris1_xva(7,26690),iris1_xva(8,26690),iris1_xva(9,26690))
+
+% %check dynamics a
+% plot3(system.x(1, 24000:30001),system.x(2, 24000:30001),system.x(3, 24000:30001))
+% hold on
+% grid on
+% zlim([0 1.5])
+% quiver3(system.x(1, 24000),system.x(2, 24000),system.x(3, 24000),system.v(1, 24000),system.v(2, 24000),system.v(3, 24000))
+% 
+% plot3(iris1_xva(1,24000:30001),iris1_xva(2,24000:30001),iris1_xva(3,24000:30001))
+% quiver3(iris1_xva(1,24000),iris1_xva(2,24000),iris1_xva(3,24000),iris1_xva(4,24000),iris1_xva(5,24000),iris1_xva(6,24000))
+% 
+% quiver3(system.x(1, 25120),system.x(2, 25120),system.x(3, 25120),system.v(1, 25120),system.v(2, 25120),system.v(3, 25120))
+% quiver3(iris1_xva(1,25120),iris1_xva(2,25120),iris1_xva(3,25120),iris1_xva(4,25120),iris1_xva(5,25120),iris1_xva(6,25120))
+% 
+% quiver3(system.x(1, 26690),system.x(2, 26690),system.x(3, 26690),system.v(1, 26690),system.v(2, 26690),system.v(3, 26690))
+% quiver3(iris1_xva(1,26690),iris1_xva(2,26690),iris1_xva(3,26690),iris1_xva(4,26690),iris1_xva(5,26690),iris1_xva(6,26690))
+
 % % plot trajectory and desired trajectory
 % figure(1)
 % subplot(3, 1, 1)
