@@ -3,7 +3,7 @@ close all;
 
 % simulation time
 dt = 0.001;
-sim_t = 30;
+sim_t = 1;
 
 %% initialize parameters
 % iris1
@@ -83,7 +83,7 @@ for i = 2:length(system.t)
     b1d = tra(10:12, i);
     
     % control input and error
-    [control, error] = ctrl.geometric_tracking_ctrl(i, system, Xd_enu, b1d);
+    [sys_fM, error] = ctrl.geometric_tracking_ctrl(i, system, Xd_enu, b1d);
 
     % system dynamics
     X0 = [vec_enu_to_ned(system.x(:, i-1));
@@ -91,14 +91,17 @@ for i = 2:length(system.t)
         reshape(reshape(system.R(:, i-1), 3, 3), 9, 1);
         system.W(:, i-1)];
     
-    [T, X_new] = ode45(@(t, x) system.dynamics(t, x, control), [0, dt], X0, control);
+    [T, X_new] = ode45(@(t, x) system.dynamics(t, x, sys_fM), [0, dt], X0, sys_fM);
     system.x(:, i) = vec_ned_to_enu(X_new(end, 1:3));
     system.v(:, i) = vec_ned_to_enu(X_new(end, 4:6));
     system.R(:, i) = X_new(end, 7:15);
     system.W(:, i) = X_new(end, 16:18);
-    a_wdot = dvdW(system,i,control);
+    a_wdot = dvdW(system,i,sys_fM);
     system.a(:, i) = a_wdot(1:3);
     system.dW(:, i) = a_wdot(4:6);
+    
+    % Compute u*
+    q_fM = ComputeUstar(iris1,iris2,system,sys_fM);
     
     % others dynamics
     iris1_xva(:, i) = iris_dynamics(iris1,system,i);
@@ -111,8 +114,8 @@ for i = 2:length(system.t)
     system.eW(:, i) = error(10:12);
     
     % save rotor thrust
-    system.force_moment(:, i) = control(1:4);
-    system.rotor_thrust(:, i) = system.allocation_matrix_inv*control(1:4);
+    system.force_moment(:, i) = sys_fM(1:4);
+    system.rotor_thrust(:, i) = system.allocation_matrix_inv*sys_fM(1:4);
 end
 %% plot 
 % plot dynamics x
