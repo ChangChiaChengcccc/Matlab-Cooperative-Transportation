@@ -1,69 +1,22 @@
 % A simulation for geometric tracking control of multirotors
 close all;
-
+%% initialize
 % simulation time
 dt = 0.001;
-sim_t = 1;
+sim_t = 30;
 
-%% initialize parameters
-% iris1
+% initialize iris1,iris2,payload,system
 iris1 = multirotor_dynamics;
-iris1.m = 1.55;
-iris1.J = [0.0347563, 0, 0;
-                0, 0.0458929, 0;
-                0, 0, 0.0977];
-iris1.x =[0.6; 0; 0];
-% iris2
 iris2 = multirotor_dynamics;
-iris2.m = 1.55;
-iris2.J = [0.0347563, 0, 0;
-                0, 0.0458929, 0;
-                0, 0, 0.0977];
-iris2.x =[-0.6; 0; 0];
-% payload
 payload = multirotor_dynamics;
-payload.m = 0.3;
-payload.J = [0.0031, 0, 0;
-                0, 0.0656, 0;
-                0, 0, 0.0656];
-payload.x =[0; 0; 0.125];
-system_inertia =  sys_inertia(iris1,iris2,payload);
-
-% system
 system = multirotor_dynamics;
-system.dt = dt;
-system.sim_t = sim_t;
-system.t = 0:dt:sim_t;
-system.m = system_inertia(1);
-system.J = diag(system_inertia(2:4));
-system.d = 0.225;
-system.c_tau = 1.347e-2;
-system.allocation_matrix = cal_allocation_matrix(system.d, system.c_tau);
-system.allocation_matrix_inv = cal_allocation_matrix_inv(system.allocation_matrix);
-system.x = zeros(3, length(system.t));
-system.v = zeros(3, length(system.t));
-system.a = zeros(3, length(system.t));
-system.R = zeros(9, length(system.t));
-system.W = zeros(3, length(system.t));
-system.dW = zeros(3, length(system.t));
-system.ex = zeros(3, length(system.t));
-system.ev = zeros(3, length(system.t));
-system.eR = zeros(3, length(system.t));
-system.eW = zeros(3, length(system.t));
-system.force_moment = zeros(4, length(system.t));
-system.rotor_thrust = zeros(4, length(system.t));
+[iris1, iris2, payload, system] = init_sys(iris1,iris2,payload,system,dt,sim_t);
 
-% initialize iris_dynamics
-iris1_xva = zeros(9, length(system.t));
-iris2_xva = zeros(9, length(system.t));
-
-% initialize states
-system.x(:, 1) = [0; 0; 0];
-system.v(:, 1) = [0; 0; 0];
-system.a(:, 1) = [0; 0; 0];
-system.R(:, 1) = [1; 0; 0; 0; 1; 0; 0; 0; 1];
-system.W(:, 1) = [0; 0; 0];
-system.dW(:, 1) = [0; 0; 0];
+% initialize iris1_alone, iris2_alone
+iris1_alone = multirotor_dynamics;
+iris2_alone = multirotor_dynamics;
+iris1_alone = init_alone_dyna(iris1_alone,system);
+iris2_alone = init_alone_dyna(iris2_alone,system);
 
 % initialize controller
 ctrl = controller;
@@ -71,7 +24,6 @@ ctrl = controller;
 % initialize trajectory
 tra = zeros(12, length(system.t));
 traj = trajectory;
-
 
 %% control loop
 for i = 2:length(system.t)
@@ -83,85 +35,68 @@ for i = 2:length(system.t)
     b1d = tra(10:12, i);
     
     % control input and error
-    [sys_fM, error] = ctrl.geometric_tracking_ctrl(i, system, Xd_enu, b1d);
+    [sys_fM, sys_error] = ctrl.geometric_tracking_ctrl(i, system, Xd_enu, b1d);
 
     % system dynamics
-    X0 = [vec_enu_to_ned(system.x(:, i-1));
+    sys_X0 = [vec_enu_to_ned(system.x(:, i-1));
         vec_enu_to_ned(system.v(:, i-1));
         reshape(reshape(system.R(:, i-1), 3, 3), 9, 1);
         system.W(:, i-1)];
     
-    [T, X_new] = ode45(@(t, x) system.dynamics(t, x, sys_fM), [0, dt], X0, sys_fM);
+    [T, X_new] = ode45(@(t, x) system.dynamics(t, x, sys_fM), [0, dt], sys_X0, sys_fM);
     system.x(:, i) = vec_ned_to_enu(X_new(end, 1:3));
     system.v(:, i) = vec_ned_to_enu(X_new(end, 4:6));
     system.R(:, i) = X_new(end, 7:15);
     system.W(:, i) = X_new(end, 16:18);
-    a_wdot = dvdW(system,i,sys_fM);
-    system.a(:, i) = a_wdot(1:3);
-    system.dW(:, i) = a_wdot(4:6);
-    
-    % Compute u*
-    q_fM = ComputeUstar(iris1,iris2,system,sys_fM);
-    
-    % others dynamics
-    iris1_xva(:, i) = iris_dynamics(iris1,system,i);
-    iris2_xva(:, i) = iris_dynamics(iris2,system,i);
+    [system.a(:, i), system.dW(:, i)] = dvdW(system,i,sys_fM);
     
     % save the error_ned
-    system.ex(:, i) = error(1:3);
-    system.ev(:, i) = error(4:6);
-    system.eR(:, i) = error(7:9);
-    system.eW(:, i) = error(10:12);
+    system.ex(:, i) = sys_error(1:3);
+    system.ev(:, i) = sys_error(4:6);
+    system.eR(:, i) = sys_error(7:9);
+    system.eW(:, i) = sys_error(10:12);
     
     % save rotor thrust
     system.force_moment(:, i) = sys_fM(1:4);
     system.rotor_thrust(:, i) = system.allocation_matrix_inv*sys_fM(1:4);
+    
+    % others dynamics (with system)
+    [iris1.x(:, i), iris1.v(:, i), iris1.a(:, i)] = iris_dynamics(iris1,system,i);
+    [iris2.x(:, i), iris2.v(:, i), iris2.a(:, i)] = iris_dynamics(iris2,system,i);
+    
+   %% others dynamics (alone)
+    % Compute u*
+    [iris1_fM, iris2_fM]= ComputeUstar(iris1,iris2,system,sys_fM);
+    % iris1_alone dynamics
+    iris1_X0 = [vec_enu_to_ned(iris1.x(:, i-1));
+        vec_enu_to_ned(iris1.v(:, i-1));
+        % The orientation is the same
+        reshape(reshape(system.R(:, i-1), 3, 3), 9, 1);
+        system.W(:, i-1)];
+    [T, X_new] = ode45(@(t, x) iris1.dynamics(t, x, iris1_fM), [0, dt], iris1_X0, iris1_fM);
+    iris1_alone.x(:, i) = vec_ned_to_enu(X_new(end, 1:3));
+    iris1_alone.v(:, i) = vec_ned_to_enu(X_new(end, 4:6));
+    iris1_alone.R(:, i) = X_new(end, 7:15);
+    iris1_alone.W(:, i) = X_new(end, 16:18);
+    [iris1_alone.a(:, i), iris1_alone.dW(:, i)] = dvdW(iris1_alone,i,iris1_fM);
+    
+    % iris2_alone dynamics
+    iris2_X0 = [vec_enu_to_ned(iris2.x(:, i-1));
+        vec_enu_to_ned(iris2.v(:, i-1));
+        % The orientation is the same
+        reshape(reshape(system.R(:, i-1), 3, 3), 9, 1);
+        system.W(:, i-1)];
+    [T, X_new] = ode45(@(t, x) iris2.dynamics(t, x, iris2_fM), [0, dt], iris2_X0, iris2_fM);
+    iris2_alone.x(:, i) = vec_ned_to_enu(X_new(end, 1:3));
+    iris2_alone.v(:, i) = vec_ned_to_enu(X_new(end, 4:6));
+    iris2_alone.R(:, i) = X_new(end, 7:15);
+    iris2_alone.W(:, i) = X_new(end, 16:18);
+    [iris2_alone.a(:, i), iris2_alone.dW(:, i)] = dvdW(iris2_alone,i,iris2_fM);
+
 end
-%% plot 
-% plot dynamics x
-% iris1_to_iris2_x = [iris1_xva(1,:);iris2_xva(1,:)];
-% iris1_to_iris2_y = [iris1_xva(2,:);iris2_xva(2,:)];
-% iris1_to_iris2_z = [iris1_xva(3,:);iris2_xva(3,:)];
-% plot3(iris1_to_iris2_x,iris1_to_iris2_y,iris1_to_iris2_z,'-k')
-% hold on
-% figure(8)
-% plot3(system.x(1, :),system.x(2, :),system.x(3, :),...
-%          iris1_xva(1,:),iris1_xva(2,:),iris1_xva(3,:), ...
-%          iris2_xva(1,:),iris2_xva(2,:),iris2_xva(3,:));
-% grid on
-
-%check dynamics a
-% plot3(system.x(1, 24000:30001),system.x(2, 24000:30001),system.x(3, 24000:30001))
-% hold on
-% grid on
-% zlim([0 1.5])
-% quiver3(system.x(1, 24000),system.x(2, 24000),system.x(3, 24000),system.a(1, 24000),system.a(2, 24000),system.a(3, 24000))
-% 
-% plot3(iris1_xva(1,24000:30001),iris1_xva(2,24000:30001),iris1_xva(3,24000:30001))
-% quiver3(iris1_xva(1,24000),iris1_xva(2,24000),iris1_xva(3,24000),iris1_xva(7,24000),iris1_xva(8,24000),iris1_xva(9,24000))
-% 
-% quiver3(system.x(1, 25120),system.x(2, 25120),system.x(3, 25120),system.a(1, 25120),system.a(2, 25120),system.a(3, 25120))
-% quiver3(iris1_xva(1,25120),iris1_xva(2,25120),iris1_xva(3,25120),iris1_xva(7,25120),iris1_xva(8,25120),iris1_xva(9,25120))
-% 
-% quiver3(system.x(1, 26690),system.x(2, 26690),system.x(3, 26690),system.a(1, 26690),system.a(2, 26690),system.a(3, 26690))
-% quiver3(iris1_xva(1,26690),iris1_xva(2,26690),iris1_xva(3,26690),iris1_xva(7,26690),iris1_xva(8,26690),iris1_xva(9,26690))
-
-% %check dynamics a
-% plot3(system.x(1, 24000:30001),system.x(2, 24000:30001),system.x(3, 24000:30001))
-% hold on
-% grid on
-% zlim([0 1.5])
-% quiver3(system.x(1, 24000),system.x(2, 24000),system.x(3, 24000),system.v(1, 24000),system.v(2, 24000),system.v(3, 24000))
-% 
-% plot3(iris1_xva(1,24000:30001),iris1_xva(2,24000:30001),iris1_xva(3,24000:30001))
-% quiver3(iris1_xva(1,24000),iris1_xva(2,24000),iris1_xva(3,24000),iris1_xva(4,24000),iris1_xva(5,24000),iris1_xva(6,24000))
-% 
-% quiver3(system.x(1, 25120),system.x(2, 25120),system.x(3, 25120),system.v(1, 25120),system.v(2, 25120),system.v(3, 25120))
-% quiver3(iris1_xva(1,25120),iris1_xva(2,25120),iris1_xva(3,25120),iris1_xva(4,25120),iris1_xva(5,25120),iris1_xva(6,25120))
-% 
-% quiver3(system.x(1, 26690),system.x(2, 26690),system.x(3, 26690),system.v(1, 26690),system.v(2, 26690),system.v(3, 26690))
-% quiver3(iris1_xva(1,26690),iris1_xva(2,26690),iris1_xva(3,26690),iris1_xva(4,26690),iris1_xva(5,26690),iris1_xva(6,26690))
-
+%% chiacheng plot 
+%plot_function(iris1,iris2,system)
+%% chengcheng original plot
 % % plot trajectory and desired trajectory
 % figure(1)
 % subplot(3, 1, 1)

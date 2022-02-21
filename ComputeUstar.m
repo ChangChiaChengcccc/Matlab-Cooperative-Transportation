@@ -1,11 +1,11 @@
-function Ustar = ComputeUstar(q1,q2,sys,sys_fM)
+function [iris1_fM, iris2_fM] = ComputeUstar(q1,q2,sys,sys_fM)
     
     %A = zeros(4,8);
     %H = zeros(8,8);
-    r1_qs = q1.x - sys.x(:, 1); %enu
+    r1_qs = q1.x(:, 1) - sys.x(:, 1); %enu
     r1_qs_ned = vec_enu_to_ned(r1_qs); %ned;
     
-    r2_qs = q2.x - sys.x(:, 1); %enu
+    r2_qs = q2.x(:, 1) - sys.x(:, 1); %enu
     r2_qs_ned = vec_enu_to_ned(r2_qs); %ned;
    %% A
     % iris1 is [0, 0.6, 0] in system body-fixed frame
@@ -26,8 +26,9 @@ function Ustar = ComputeUstar(q1,q2,sys,sys_fM)
    %% u*
     H_inv_2 = inv(H)*inv(H);
     translator = H_inv_2*A'/(A*H_inv_2*A');
-    Ustar = translator*sys_fM
-    
+    Ustar = translator*sys_fM;
+    iris1_fM = Ustar(1:4);
+    iris2_fM = Ustar(5:8);
     %% test
      %original_fM = A*Ustar
 end
