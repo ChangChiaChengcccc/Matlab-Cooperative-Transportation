@@ -1,15 +1,21 @@
 function [iris1, iris2, payload, system] = init_sys(iris1,iris2,payload,system,dt,sim_t)
    %% iris1, iris2, payload
     % initialize parameters
-    iris1.x =zeros(3, length(system.t));
-    iris1.v =zeros(3, length(system.t));
-    iris1.a =zeros(3, length(system.t));
-    iris1.dW =zeros(3, length(system.t));  
+    iris1.dt = dt;
+    iris1.sim_t = sim_t;
+    iris1.t = 0:dt:sim_t;
+    iris1.x =zeros(3, length(iris1.t));
+    iris1.v =zeros(3, length(iris1.t));
+    iris1.a =zeros(3, length(iris1.t));
+    iris1.dW =zeros(3, length(iris1.t));  
     
-    iris2.x =zeros(3, length(system.t));
-    iris2.v =zeros(3, length(system.t));
-    iris2.a =zeros(3, length(system.t));
-    iris2.dW =zeros(3, length(system.t));  
+    iris2.dt = dt;
+    iris2.sim_t = sim_t;
+    iris2.t = 0:dt:sim_t;
+    iris2.x =zeros(3, length(iris2.t));
+    iris2.v =zeros(3, length(iris2.t));
+    iris2.a =zeros(3, length(iris2.t));
+    iris2.dW =zeros(3, length(iris2.t));  
    
     iris1.m = 1.55;
     iris1.J = [0.0347563, 0, 0;

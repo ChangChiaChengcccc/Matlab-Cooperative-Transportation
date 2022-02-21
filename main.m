@@ -79,7 +79,8 @@ for i = 2:length(system.t)
     iris1_alone.R(:, i) = X_new(end, 7:15);
     iris1_alone.W(:, i) = X_new(end, 16:18);
     [iris1_alone.a(:, i), iris1_alone.dW(:, i)] = dvdW(iris1_alone,i,iris1_fM);
-    
+    % F and tau on iris1
+    [iris1_alone.F(:, i), iris1_alone.tau(:, i)] = F_tau(iris1,iris1_alone,i);
     % iris2_alone dynamics
     iris2_X0 = [vec_enu_to_ned(iris2.x(:, i-1));
         vec_enu_to_ned(iris2.v(:, i-1));
@@ -92,7 +93,7 @@ for i = 2:length(system.t)
     iris2_alone.R(:, i) = X_new(end, 7:15);
     iris2_alone.W(:, i) = X_new(end, 16:18);
     [iris2_alone.a(:, i), iris2_alone.dW(:, i)] = dvdW(iris2_alone,i,iris2_fM);
-
+    
 end
 %% chiacheng plot 
 %plot_function(iris1,iris2,system)

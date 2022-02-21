@@ -32,6 +32,9 @@ classdef multirotor_dynamics
         % control input
         force_moment
         rotor_thrust
+        % Force torque
+        F
+        tau
     end
     methods
         function dX = dynamics(obj, t, X, F)

@@ -9,4 +9,6 @@ function object = init_alone_dyna(object,system)
     object.R = zeros(9, length(system.t));
     object.W = zeros(3, length(system.t));
     object.dW = zeros(3, length(system.t));
+    object.F = zeros(3, length(system.t));
+    object.tau = zeros(3, length(system.t));
 end
