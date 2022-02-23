@@ -3,7 +3,7 @@ close all;
 %% initialize
 % simulation time
 dt = 0.001;
-sim_t = 30;
+sim_t = 10;
 
 % initialize iris1,iris2,payload,system
 iris1 = multirotor_dynamics;
@@ -64,9 +64,10 @@ for i = 2:length(system.t)
     [iris1.x(:, i), iris1.v(:, i), iris1.a(:, i)] = iris_dynamics(iris1,system,i);
     [iris2.x(:, i), iris2.v(:, i), iris2.a(:, i)] = iris_dynamics(iris2,system,i);
     
-   %% others dynamics (alone)
+   %% get F & tau (alone)
     % Compute u*
     [iris1_fM, iris2_fM]= ComputeUstar(iris1,iris2,system,sys_fM);
+    
     % iris1_alone dynamics
     iris1_X0 = [vec_enu_to_ned(iris1.x(:, i-1));
         vec_enu_to_ned(iris1.v(:, i-1));
@@ -81,6 +82,7 @@ for i = 2:length(system.t)
     [iris1_alone.a(:, i), iris1_alone.dW(:, i)] = dvdW(iris1_alone,i,iris1_fM);
     % F and tau on iris1
     [iris1_alone.F(:, i), iris1_alone.tau(:, i)] = F_tau(iris1,iris1_alone,i);
+    
     % iris2_alone dynamics
     iris2_X0 = [vec_enu_to_ned(iris2.x(:, i-1));
         vec_enu_to_ned(iris2.v(:, i-1));
@@ -93,10 +95,11 @@ for i = 2:length(system.t)
     iris2_alone.R(:, i) = X_new(end, 7:15);
     iris2_alone.W(:, i) = X_new(end, 16:18);
     [iris2_alone.a(:, i), iris2_alone.dW(:, i)] = dvdW(iris2_alone,i,iris2_fM);
-    
 end
+%% ukf
+ukf_state_estimation(iris1,iris1_alone);
 %% chiacheng plot 
-%plot_function(iris1,iris2,system)
+%plot_function(iris1,iris2,system) %sim_t > 30
 %% chengcheng original plot
 % % plot trajectory and desired trajectory
 % figure(1)

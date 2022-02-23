@@ -47,12 +47,12 @@ classdef multirotor_dynamics
             dx = X(4:6);
             dv = obj.g*obj.e3 - (f/obj.m)*R_now*obj.e3;
             dR = R_now*hat_map(W_now);
-            dW = obj.J\(-vec_cross(W_now, obj.J*W_now) + M);
+            Wdot = obj.J\(-vec_cross(W_now, obj.J*W_now) + M);
             
             dX(1:3) = dx;
             dX(4:6) = dv;
             dX(7:15) = reshape(dR, 9, 1);
-            dX(16:18) = dW;
+            dX(16:18) = Wdot;
         end
     end
 end

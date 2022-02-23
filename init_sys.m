@@ -37,12 +37,10 @@ function [iris1, iris2, payload, system] = init_sys(iris1,iris2,payload,system,d
 
    %% system
     % initialize parameters
-    system_inertia =  sys_inertia(iris1,iris2,payload);
+    system =  sys_inertia(iris1,iris2,payload,system);
     system.dt = dt;
     system.sim_t = sim_t;
     system.t = 0:dt:sim_t;
-    system.m = system_inertia(1);
-    system.J = diag(system_inertia(2:4));
     system.d = 0.225;
     system.c_tau = 1.347e-2;
     system.allocation_matrix = cal_allocation_matrix(system.d, system.c_tau);
