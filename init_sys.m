@@ -7,6 +7,9 @@ function [iris1, iris2, payload, system] = init_sys(iris1,iris2,payload,system,d
     iris1.x =zeros(3, length(iris1.t));
     iris1.v =zeros(3, length(iris1.t));
     iris1.a =zeros(3, length(iris1.t));
+    iris1.R = zeros(9, length(iris1.t));
+    iris1.rpy = zeros(3, length(iris1.t));
+    iris1.W = zeros(3, length(iris1.t));
     iris1.dW =zeros(3, length(iris1.t));  
     
     iris2.dt = dt;
@@ -15,6 +18,9 @@ function [iris1, iris2, payload, system] = init_sys(iris1,iris2,payload,system,d
     iris2.x =zeros(3, length(iris2.t));
     iris2.v =zeros(3, length(iris2.t));
     iris2.a =zeros(3, length(iris2.t));
+    iris2.R = zeros(9, length(iris2.t));
+    iris2.rpy = zeros(3, length(iris2.t));
+    iris2.W = zeros(3, length(iris2.t));
     iris2.dW =zeros(3, length(iris2.t));  
    
     iris1.m = 1.55;
@@ -49,6 +55,7 @@ function [iris1, iris2, payload, system] = init_sys(iris1,iris2,payload,system,d
     system.v = zeros(3, length(system.t));
     system.a = zeros(3, length(system.t));
     system.R = zeros(9, length(system.t));
+    system.rpy = zeros(3, length(system.t));
     system.W = zeros(3, length(system.t));
     system.dW = zeros(3, length(system.t));
     system.ex = zeros(3, length(system.t));

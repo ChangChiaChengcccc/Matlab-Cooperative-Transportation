@@ -22,6 +22,7 @@ classdef multirotor_dynamics
         v
         a
         R
+        rpy
         W
         dW
         % errors

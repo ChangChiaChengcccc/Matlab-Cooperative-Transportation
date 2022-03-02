@@ -3,7 +3,7 @@ close all;
 %% initialize
 % simulation time
 dt = 0.001;
-sim_t = 10;
+sim_t = 3;
 
 % initialize iris1,iris2,payload,system
 iris1 = multirotor_dynamics;
@@ -47,6 +47,11 @@ for i = 2:length(system.t)
     system.x(:, i) = vec_ned_to_enu(X_new(end, 1:3));
     system.v(:, i) = vec_ned_to_enu(X_new(end, 4:6));
     system.R(:, i) = X_new(end, 7:15);
+%     ypr= rotm2eul(reshape(system.R(:,i),3,3),'ZYX');
+%     system.rpy(:,i) =[ypr(3);ypr(2);ypr(1)];
+    system.rpy(:,i) = rotmat2eulang(reshape(system.R(:,i),3,3),'?');
+
+    
     system.W(:, i) = X_new(end, 16:18);
     [system.a(:, i), system.dW(:, i)] = dvdW(system,i,sys_fM);
     
@@ -63,10 +68,18 @@ for i = 2:length(system.t)
     % others dynamics (with system)
     [iris1.x(:, i), iris1.v(:, i), iris1.a(:, i)] = iris_dynamics(iris1,system,i);
     [iris2.x(:, i), iris2.v(:, i), iris2.a(:, i)] = iris_dynamics(iris2,system,i);
-    
+    iris1.R(:,i) =  system.R(:, i);
+    iris1.rpy(:,i) = system.rpy(:,i);
+    iris1.W(:,i) = system.W(:, i);
+    iris1.dW(:,i)  = system.dW(:, i);
+    iris2.R(:,i) =  system.R(:, i);
+    iris2.rpy(:,i) = system.rpy(:,i);
+    iris2.W(:,i) = system.W(:, i);
+    iris2.dW(:,i)  = system.dW(:, i);
+        
    %% get F & tau (alone)
     % Compute u*
-    [iris1_fM, iris2_fM]= ComputeUstar(iris1,iris2,system,sys_fM);
+    [iris1_alone.force_moment(:,i), iris2_alone.force_moment(:,i)]= ComputeUstar(iris1,iris2,system,sys_fM);
     
     % iris1_alone dynamics
     iris1_X0 = [vec_enu_to_ned(iris1.x(:, i-1));
@@ -74,12 +87,12 @@ for i = 2:length(system.t)
         % The orientation is the same
         reshape(reshape(system.R(:, i-1), 3, 3), 9, 1);
         system.W(:, i-1)];
-    [T, X_new] = ode45(@(t, x) iris1.dynamics(t, x, iris1_fM), [0, dt], iris1_X0, iris1_fM);
+    [T, X_new] = ode45(@(t, x) iris1.dynamics(t, x, iris1_alone.force_moment(:,i)), [0, dt], iris1_X0, iris1_alone.force_moment(:,i));
     iris1_alone.x(:, i) = vec_ned_to_enu(X_new(end, 1:3));
     iris1_alone.v(:, i) = vec_ned_to_enu(X_new(end, 4:6));
     iris1_alone.R(:, i) = X_new(end, 7:15);
     iris1_alone.W(:, i) = X_new(end, 16:18);
-    [iris1_alone.a(:, i), iris1_alone.dW(:, i)] = dvdW(iris1_alone,i,iris1_fM);
+    [iris1_alone.a(:, i), iris1_alone.dW(:, i)] = dvdW(iris1_alone,i,iris1_alone.force_moment(:,i));
     % F and tau on iris1
     [iris1_alone.F(:, i), iris1_alone.tau(:, i)] = F_tau(iris1,iris1_alone,i);
     
@@ -89,13 +102,15 @@ for i = 2:length(system.t)
         % The orientation is the same
         reshape(reshape(system.R(:, i-1), 3, 3), 9, 1);
         system.W(:, i-1)];
-    [T, X_new] = ode45(@(t, x) iris2.dynamics(t, x, iris2_fM), [0, dt], iris2_X0, iris2_fM);
+    [T, X_new] = ode45(@(t, x) iris2.dynamics(t, x, iris2_alone.force_moment(:,i)), [0, dt], iris2_X0, iris2_alone.force_moment(:,i));
     iris2_alone.x(:, i) = vec_ned_to_enu(X_new(end, 1:3));
     iris2_alone.v(:, i) = vec_ned_to_enu(X_new(end, 4:6));
     iris2_alone.R(:, i) = X_new(end, 7:15);
     iris2_alone.W(:, i) = X_new(end, 16:18);
-    [iris2_alone.a(:, i), iris2_alone.dW(:, i)] = dvdW(iris2_alone,i,iris2_fM);
+    [iris2_alone.a(:, i), iris2_alone.dW(:, i)] = dvdW(iris2_alone,i,iris2_alone.force_moment(:,i));
 end
+%% check fM
+% result = test_fM(system,iris1,iris2,iris1_alone,iris2_alone)
 %% ukf
 ukf_state_estimation(iris1,iris1_alone);
 %% chiacheng plot 
