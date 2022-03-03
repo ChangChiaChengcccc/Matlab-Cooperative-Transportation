@@ -10,7 +10,11 @@ function [iris1, iris2, payload, system] = init_sys(iris1,iris2,payload,system,d
     iris1.R = zeros(9, length(iris1.t));
     iris1.rpy = zeros(3, length(iris1.t));
     iris1.W = zeros(3, length(iris1.t));
-    iris1.dW =zeros(3, length(iris1.t));  
+    iris1.dW =zeros(3, length(iris1.t));
+    iris1.d = 0.225;
+    iris1.c_tau = 1.347e-2;
+    iris1.allocation_matrix = cal_allocation_matrix(iris1.d, iris1.c_tau);
+    iris1.allocation_matrix_inv = cal_allocation_matrix_inv(iris1.allocation_matrix);  
     
     iris2.dt = dt;
     iris2.sim_t = sim_t;
@@ -22,7 +26,11 @@ function [iris1, iris2, payload, system] = init_sys(iris1,iris2,payload,system,d
     iris2.rpy = zeros(3, length(iris2.t));
     iris2.W = zeros(3, length(iris2.t));
     iris2.dW =zeros(3, length(iris2.t));  
-   
+    iris2.d = 0.225;
+    iris2.c_tau = 1.347e-2;
+    iris2.allocation_matrix = cal_allocation_matrix(iris2.d, iris2.c_tau);
+    iris2.allocation_matrix_inv = cal_allocation_matrix_inv(iris2.allocation_matrix);  
+    
     iris1.m = 1.55;
     iris1.J = [0.0347563, 0, 0;
                     0, 0.0458929, 0;

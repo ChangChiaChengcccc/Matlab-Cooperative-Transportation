@@ -12,4 +12,8 @@ function object = init_alone_dyna(object,system)
     object.force_moment = zeros(4, length(system.t));
     object.F = zeros(3, length(system.t));
     object.tau = zeros(3, length(system.t));
+    object.d = 0.225;
+    object.c_tau = 1.347e-2;
+    object.allocation_matrix = cal_allocation_matrix(object.d, object.c_tau);
+    object.allocation_matrix_inv = cal_allocation_matrix_inv(object.allocation_matrix);  
 end

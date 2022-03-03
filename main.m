@@ -64,8 +64,8 @@ for i = 2:length(system.t)
     system.eW(:, i) = sys_error(10:12);
     
     % save rotor thrust
-    system.force_moment(:, i) = sys_fM(1:4);
-    system.rotor_thrust(:, i) = system.allocation_matrix_inv*sys_fM(1:4);
+    system.force_moment(:, i) = sys_fM;
+    system.rotor_thrust(:, i) = system.allocation_matrix_inv*sys_fM;
     
     % others dynamics (with system)
     [iris1.x(:, i), iris1.v(:, i), iris1.a(:, i)] = iris_dynamics(iris1,system,i);
@@ -97,6 +97,10 @@ for i = 2:length(system.t)
     [iris1_alone.a(:, i), iris1_alone.dW(:, i)] = dvdW(iris1_alone,i,iris1_alone.force_moment(:,i));
     % F and tau on iris1
     [iris1_alone.F(:, i), iris1_alone.tau(:, i)] = F_tau(iris1,iris1_alone,i);
+    % efficiency
+    iris1_alone.rotor_thrust(:, i) = iris1_alone.allocation_matrix_inv*iris1_alone.force_moment(:,i);
+    iris1_alone.fault_force_moment = iris1_alone.allocation_matrix*diag(iris1_alone.E)*iris1_alone.rotor_thrust(:, i);
+    
     
     % iris2_alone dynamics
     iris2_X0 = [vec_enu_to_ned(iris2.x(:, i-1));
@@ -110,6 +114,11 @@ for i = 2:length(system.t)
     iris2_alone.R(:, i) = X_new(end, 7:15);
     iris2_alone.W(:, i) = X_new(end, 16:18);
     [iris2_alone.a(:, i), iris2_alone.dW(:, i)] = dvdW(iris2_alone,i,iris2_alone.force_moment(:,i));
+    % F and tau on iris2
+    [iris2_alone.F(:, i), iris2_alone.tau(:, i)] = F_tau(iris2,iris2_alone,i);
+    % efficiency
+    iris2_alone.rotor_thrust(:, i) = iris2_alone.allocation_matrix_inv*iris2_alone.force_moment(:,i);
+    iris2_alone.fault_force_moment = iris2_alone.allocation_matrix*diag(iris2_alone.E)*iris2_alone.rotor_thrust(:, i);
 end
 %% check fM
 % result = test_fM(system,iris1,iris2,iris1_alone,iris2_alone)

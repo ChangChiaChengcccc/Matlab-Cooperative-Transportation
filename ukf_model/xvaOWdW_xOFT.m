@@ -3,10 +3,8 @@ function ukf_state_estimation(iris1,iris1_alone)
     dt = iris1.dt;
     t_vec = iris1.t;
     % initial state
-    initial_state = [iris1.x(:,1);iris1.v(:,1);iris1.a(:,1);iris1.rpy(:,1); iris1.W(:,1); iris1.dW(:,1); iris1_alone.E];
-    true_state_vec = [iris1.x; iris1.v; iris1.a; iris1.rpy; iris1.W; iris1.dW; ...
-                                iris1_alone.E(1)*ones(1,length(t_vec)); iris1_alone.E(2)*ones(1,length(t_vec)); ...
-                                iris1_alone.E(3)*ones(1,length(t_vec)); iris1_alone.E(4)*ones(1,length(t_vec))];
+    initial_state = [iris1.x(:,1);iris1.v(:,1);iris1.a(:,1);iris1.rpy(:,1); iris1.W(:,1); iris1.dW(:,1)];
+    true_state_vec = [iris1.x; iris1.v; iris1.a; iris1.rpy; iris1.W; iris1.dW];
     initial_measurement = [iris1.x(:,1); iris1.rpy(:,1); iris1_alone.F(:,1); iris1_alone.tau(:,1)];
     measurement_vec = [iris1.x; iris1.rpy; iris1_alone.F; iris1_alone.tau]; %+ 0.1*randn(length(initial_measurement),length(t_vec)); 
     
@@ -20,14 +18,13 @@ function ukf_state_estimation(iris1,iris1_alone)
           1e-3 1e-3 1e-3 ...       %a
           1e-4 1e-4 1e-4 ... %O
           1e-1 1e-1 1e-1 ... %W
-          1e-1 1e-1 1e-1 ... %dW
-          1e-1 1e-1 1e-1 1e-1 %E
+          1e-1 1e-1 1e-1     %dW
          ];    
     %std of measurement
-    r=[1e-4 1e-4 1e-4 ... %x
-         1e-4 1e-4 1e-4 ... %O
-         1e-4 1e-4 1e-4 ... %F
-         1e-4 1e-4 1e-4 ... %tau
+    r=[0.0001 0.0001 0.0001 ... %x
+         0.0001 0.0001 0.0001 ... %O
+         0.0001 0.0001 0.0001 ... %F
+         0.0001 0.0001 0.0001 ... %tau
         ];    
     Q=diag(q)*diag(q);       % covariance of process
     R=diag(r)*diag(r);        % covariance of measurement  
@@ -55,16 +52,11 @@ function ukf_state_estimation(iris1,iris1_alone)
                                             % dW
                                             x(16);
                                             x(17);
-                                            x(18);
-                                            % E
-                                            x(19);
-                                            x(20);
-                                            x(21);
-                                            x(22)
+                                            x(18)
                                            ];
                                        
     % measurement equation
-    h=@(x,iris1,iris1_alone,i) [%x
+    h=@(x,iris1,iris1_alone,i) [% x
                                             x(1);
                                             x(2);
                                             x(3);
@@ -74,12 +66,10 @@ function ukf_state_estimation(iris1,iris1_alone)
                                             x(12);
                                             %F
                                              iris1.m*[x(7); x(8); x(9)] ... 
-                                            - vec_ned_to_enu(iris1.m*iris1.g*iris1.e3 - iris1_alone.forceE(x(19:22),iris1_alone,i)...
-                                            *reshape(iris1.R(:,i),3,3)*iris1.e3);
+                                            - vec_ned_to_enu(iris1.m*iris1.g*iris1.e3 - iris1_alone.force_moment(1,i)*reshape(iris1.R(:,i),3,3)*iris1.e3);
                                             %tau
                                              iris1.J*[x(16); x(17); x(18)] ...
-                                             - iris1_alone.momentE(x(19:22),iris1_alone,i) ...
-                                             + cross([x(13); x(14); x(15)], iris1.J*[x(13); x(14); x(15)])
+                                             - iris1_alone.force_moment(2:4,i) + cross([x(13); x(14); x(15)], iris1.J*[x(13); x(14); x(15)])
                                             ];                               
     x=initial_state;           
     P = eye(n);                                            % initial state covraiance
@@ -243,13 +233,4 @@ function ukf_state_estimation(iris1,iris1_alone)
     y = ylabel('$dWz(m/s^2)$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
     set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41]);
     legend('$dWz\ ideal$','$dWz\ estimation$', 'Interpreter', 'latex','FontSize',20)
-    
-    %% E
-    figure(7)
-    plot(t_vec, true_state_vec(19,:),'k',t_vec, xV(19,:),'b',t_vec, xV(20,:),'c',t_vec, xV(21,:),'m',t_vec, xV(22,:),'y');
-    title('2-D E Plot','FontSize',20);
-    x = xlabel('$t$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
-    y = ylabel('$Efficiency$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
-    set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41]);
-    legend('$E\ ideal$','$e1\ estimation$','$e2\ estimation$','$e3\ estimation$','$e4\ estimation$', 'Interpreter', 'latex','FontSize',15)
 end
