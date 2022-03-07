@@ -34,13 +34,13 @@ classdef multirotor_dynamics
         force_moment
         rotor_thrust
         % Force torque
-        F
+        force
         tau
         % Efficiency
         E = [1; 1; 1; 1];
         fault_force_moment
     end
-    methods (Static)
+    methods 
         function dX = dynamics(obj, t, X, F)
             dX = zeros(18, 1);
             R_now = reshape(X(7:15), 3, 3);
@@ -58,6 +58,8 @@ classdef multirotor_dynamics
             dX(7:15) = reshape(dR, 9, 1);
             dX(16:18) = Wdot;
         end
+    end
+    methods (Static)
         function force = forceE(E, obj, i)
             rotors_thrust = obj.allocation_matrix_inv*obj.force_moment(:,i);
             force_momentE = obj.allocation_matrix*diag(E)*rotors_thrust;

@@ -1,6 +1,6 @@
 function  [x_q, v_q, a_q] = iris_dynamics(q,sys,iter)
     %x 2 terms
-    r_qs = q.x - sys.x(:, 1); %enu
+    r_qs = q.x(:, 1) - sys.x(:, 1); %enu
     r_qs_ned = vec_enu_to_ned(r_qs); %ned;
     x_q = sys.x(:,iter) + vec_ned_to_enu(reshape(sys.R(:,iter),3,3)*r_qs_ned); %enu
     
