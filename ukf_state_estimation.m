@@ -210,11 +210,13 @@ function ukf_state_estimation(iris1,iris1_alone)
     
     %% E
     figure(7)
-    plot(t_vec, true_state_vec(16,:),'k',t_vec, xV(16,:),'b',t_vec, xV(17,:),'c',t_vec, xV(18,:),'m',t_vec, xV(19,:),'y');
+    plot(t_vec, xV(16,:),'b',t_vec, xV(17,:),'c',t_vec, xV(18,:),'m',t_vec, xV(19,:),'y', ...
+           t_vec, iris1_alone.E(1)*ones(1,length(t_vec)),'k', t_vec, iris1_alone.E(2)*ones(1,length(t_vec)),'k', ...
+           t_vec, iris1_alone.E(3)*ones(1,length(t_vec)),'k', t_vec, iris1_alone.E(4)*ones(1,length(t_vec)),'k');
     ylim([0 2]);
     title('2-D E Plot','FontSize',20);
     x = xlabel('$t$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
     y = ylabel('$Efficiency$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
     set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41]);
-    legend('$E\ ideal$','$e1\ estimation$','$e2\ estimation$','$e3\ estimation$','$e4\ estimation$', 'Interpreter', 'latex','FontSize',15)
+    legend('$e1\ estimation$','$e2\ estimation$','$e3\ estimation$','$e4\ estimation$', 'Interpreter', 'latex','FontSize',15)
 end

@@ -10,6 +10,10 @@ function object = init_alone_dyna(object,system)
     object.W = zeros(3, length(system.t));
     object.dW = zeros(3, length(system.t));
     object.force_moment = zeros(4, length(system.t));
+    object.rotor_thrust = zeros(4, length(system.t));
+    object.fault_force_moment = zeros(4, length(system.t));
+    object.fault_rotor_thrust = zeros(4, length(system.t));
+    
     object.force = zeros(3, length(system.t));
     object.tau = zeros(3, length(system.t));
     object.d = 0.225;

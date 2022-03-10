@@ -22,7 +22,6 @@ classdef multirotor_dynamics
         v
         a
         R
-        rpy
         W
         dW
         % errors
@@ -39,6 +38,7 @@ classdef multirotor_dynamics
         % Efficiency
         E = [1; 1; 1; 1];
         fault_force_moment
+        fault_rotor_thrust
     end
     methods 
         function dX = dynamics(obj, t, X, F)
@@ -60,14 +60,12 @@ classdef multirotor_dynamics
         end
     end
     methods (Static)
-        function force = forceE(E, obj, i)
-            rotors_thrust = obj.allocation_matrix_inv*obj.force_moment(:,i);
-            force_momentE = obj.allocation_matrix*diag(E)*rotors_thrust;
+        function force = forceE(E, obj, i)            
+            force_momentE = obj.allocation_matrix*diag(E)*obj.rotor_thrust(:,i);
             force = force_momentE(1);
         end
         function moment = momentE(E, obj, i)
-            rotors_thrust = obj.allocation_matrix_inv*obj.force_moment(:,i);
-            force_momentE = obj.allocation_matrix*diag(E)*rotors_thrust;
+            force_momentE = obj.allocation_matrix*diag(E)*obj.rotor_thrust(:,i);
             moment = force_momentE(2:4);
         end
     end
