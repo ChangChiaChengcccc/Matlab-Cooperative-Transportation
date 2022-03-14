@@ -1,4 +1,4 @@
-function [x,P]=ukf(fstate,x,P,hmeas,z,Q,R,iris1,iris1_alone,i)
+function [x,P]=ukf(fstate,x,P,hmeas,z,Q,R,iris1,iris1_alone,iris2,iris2_alone,i)
 % UKF   Unscented Kalman Filter for nonlinear dynamic systems
 % [x, P] = ukf(f,x,P,h,z,Q,R) returns state estimate, x and state covariance, P 
 % for nonlinear dynamic system (for simplicity, noises are assumed as additive):
@@ -38,16 +38,16 @@ Wc=Wm;
 Wc(1)=Wc(1)+(1-alpha^2+beta);               %weights for covariance
 c=sqrt(c);
 X=sigmas(x,P,c);                            %sigma points around x
-[x1,X1,P1,X2]=ut(fstate,X,Wm,Wc,L,Q,iris1,iris1_alone,i);          %unscented transformation of process
+[x1,X1,P1,X2]=ut(fstate,X,Wm,Wc,L,Q,iris1,iris1_alone,iris2,iris2_alone,i);          %unscented transformation of process
 % X1=sigmas(x1,P1,c);                         %sigma points around x1
 % X2=X1-x1(:,ones(1,size(X1,2)));             %deviation of X1
-[z1,Z1,P2,Z2]=ut(hmeas,X1,Wm,Wc,m,R,iris1,iris1_alone,i);       %unscented transformation of measurments
+[z1,Z1,P2,Z2]=ut(hmeas,X1,Wm,Wc,m,R,iris1,iris1_alone,iris2,iris2_alone,i);       %unscented transformation of measurments
 P12=X2*diag(Wc)*Z2';                        %transformed cross-covariance
 K=P12*inv(P2);
 x=x1+K*(z-z1);                              %state update
 P=P1-K*P12';                                %covariance update
 
-function [y,Y,P,Y1]=ut(f,X,Wm,Wc,n,R,iris1,iris1_alone,i)
+function [y,Y,P,Y1]=ut(f,X,Wm,Wc,n,R,iris1,iris1_alone,iris2,iris2_alone,i)
 %Unscented Transformation
 %Input:
 %        f: nonlinear map
@@ -66,7 +66,7 @@ L=size(X,2);
 y=zeros(n,1);
 Y=zeros(n,L);
 for k=1:L                   
-    Y(:,k)=f(X(:,k),iris1,iris1_alone,i);       
+    Y(:,k)=f(X(:,k),iris1,iris1_alone,iris2,iris2_alone,i);       
     y=y+Wm(k)*Y(:,k);       
 end
 Y1=Y-y(:,ones(1,L));

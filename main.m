@@ -20,7 +20,7 @@ iris2_alone = init_alone_dyna(iris2_alone,system);
 
 % set E
 iris1_alone.E = [0.8; 0.9; 0.7; 1];
-iris2_alone.E = [1; 1; 1; 1];
+iris2_alone.E = [0.8; 0.9; 0.7; 1];
 
 % initialize controller
 ctrl = controller;
@@ -124,7 +124,7 @@ end
 %% check fM
 % result = test_fM(system,iris1,iris2,iris1_alone,iris2_alone)
 %% ukf
-ukf_state_estimation(iris1,iris1_alone);
+ukf_state_estimation(iris1,iris1_alone,iris2,iris2_alone);
 %% chiacheng plot 
 %plot_function(iris1,iris2,system) %sim_t > 30
 
@@ -156,127 +156,127 @@ ukf_state_estimation(iris1,iris1_alone);
 %plot trajectory and desired trajectory
 figure(1)
 subplot(3, 1, 1)
-plot(system.t, system.x(1, :))
+plot(system.t, system.x(1, :),'b')
 hold on
-plot(system.t, tra(1, :))
-y = ylabel('$X(m)$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, tra(1, :),'k')
+y = ylabel('$X(m)$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-legend('$X$', '$X_{d}$' , 'Interpreter', 'latex')
-title('$Trajectory$ $and$ $Desired$ $Trajectory$ $(m)$', 'Interpreter', 'latex')
+legend('$X$', '$X_{d}$' , 'Interpreter', 'latex','FontSize',20)
+title('$Trajectory$ $and$ $Desired$ $Trajectory$ $(m)$', 'Interpreter', 'latex','FontSize',20)
 subplot(3, 1, 2)
-plot(system.t, system.x(2, :))
+plot(system.t, system.x(2, :),'b')
 hold on
-plot(system.t, tra(2, :))
-y = ylabel('$Y(m)$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, tra(2, :),'k')
+y = ylabel('$Y(m)$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-legend('$Y$', '$Y_{d}$' , 'Interpreter', 'latex')
+legend('$Y$', '$Y_{d}$' , 'Interpreter', 'latex','FontSize',20)
 subplot(3, 1, 3)
-plot(system.t, system.x(3, :))
+plot(system.t, system.x(3, :),'b')
 hold on
-plot(system.t, tra(3, :))
-y = ylabel('$Z(m)$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, tra(3, :),'k')
+y = ylabel('$Z(m)$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-legend('$Z$', '$Z_{d}$' , 'Interpreter', 'latex')
-xlabel('$Time(sec)$', 'Interpreter', 'latex')
+legend('$Z$', '$Z_{d}$' , 'Interpreter', 'latex','FontSize',20)
+xlabel('$Time(sec)$', 'Interpreter', 'latex','FontSize',20)
 
 % plot position error
 figure(2)
 subplot(3, 1, 1)
-plot(system.t, system.ex(1, :))
-y = ylabel('$e_{p_{x}}$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.ex(1, :),'b')
+y = ylabel('$e_{p_{x}}$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-title('$Position$ $Error$ $(m)$', 'Interpreter', 'latex')
+title('$Position$ $Error$ $(m)$', 'Interpreter', 'latex','FontSize',20)
 subplot(3, 1, 2)
-plot(system.t, system.ex(2, :))
-y = ylabel('$e_{p_{y}}$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.ex(2, :),'b')
+y = ylabel('$e_{p_{y}}$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
 subplot(3, 1, 3)
-plot(system.t, system.ex(3, :))
-y = ylabel('$e_{p_{z}}$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.ex(3, :),'b')
+y = ylabel('$e_{p_{z}}$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-xlabel('$Time(sec)$', 'Interpreter', 'latex')
+xlabel('$Time(sec)$', 'Interpreter', 'latex','FontSize',20)
 
 % plot velocity error
 figure(3)
 subplot(3, 1, 1)
-plot(system.t, system.ev(1, :))
-y = ylabel('$e_{v_{x}}$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.ev(1, :),'b')
+y = ylabel('$e_{v_{x}}$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-title('$Velocity$ $Error$ $(m/s)$', 'Interpreter', 'latex')
+title('$Velocity$ $Error$ $(m/s)$', 'Interpreter', 'latex','FontSize',20)
 subplot(3, 1, 2)
-plot(system.t, system.ev(2, :))
-y = ylabel('$e_{v_{y}}$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.ev(2, :),'b')
+y = ylabel('$e_{v_{y}}$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
 subplot(3, 1, 3)
-plot(system.t, system.ev(3, :))
-y = ylabel('$e_{v_{z}}$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.ev(3, :),'b')
+y = ylabel('$e_{v_{z}}$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-xlabel('$Time(sec)$', 'Interpreter', 'latex')
+xlabel('$Time(sec)$', 'Interpreter', 'latex','FontSize',20)
 
 % plot attitude error
 figure(4)
 subplot(3, 1, 1)
-plot(system.t, system.eR(1, :))
-y = ylabel('$e_{R_{x}}$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.eR(1, :),'b')
+y = ylabel('$e_{R_{x}}$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-title('$Attitude$ $Error$ $(rad)$', 'Interpreter', 'latex')
+title('$Attitude$ $Error$ $(rad)$', 'Interpreter', 'latex','FontSize',20)
 subplot(3, 1, 2)
-plot(system.t, system.eR(2, :))
-y = ylabel('$e_{R_{y}}$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.eR(2, :),'b')
+y = ylabel('$e_{R_{y}}$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
 subplot(3, 1, 3)
-plot(system.t, system.eR(3, :))
-y = ylabel('$e_{R_{z}}$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.eR(3, :),'b')
+y = ylabel('$e_{R_{z}}$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-xlabel('$Time(sec)$', 'Interpreter', 'latex')
+xlabel('$Time(sec)$', 'Interpreter', 'latex','FontSize',20)
 
 % plot angular velocity error
 figure(5)
 subplot(3, 1, 1)
-plot(system.t, system.eW(1, :))
-y = ylabel('$e_{\Omega_{x}}$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.eW(1, :),'b')
+y = ylabel('$e_{\Omega_{x}}$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-title('$Angular$ $Velocity$ $Error$ $(rad/s)$', 'Interpreter', 'latex')
+title('$Angular$ $Velocity$ $Error$ $(rad/s)$', 'Interpreter', 'latex','FontSize',20)
 subplot(3, 1, 2)
-plot(system.t, system.eW(2, :))
-y = ylabel('$e_{\Omega_{y}}$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.eW(2, :),'b')
+y = ylabel('$e_{\Omega_{y}}$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
 subplot(3, 1, 3)
-plot(system.t, system.eW(3, :))
-y = ylabel('$e_{\Omega_{z}}$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.eW(3, :),'b')
+y = ylabel('$e_{\Omega_{z}}$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-xlabel('$Time(sec)$', 'Interpreter', 'latex')
+xlabel('$Time(sec)$', 'Interpreter', 'latex','FontSize',20)
 
 figure(6)
-plot(system.t, system.rotor_thrust(1, :))
+plot(system.t, system.rotor_thrust(1, :),'r')
 hold on
-plot(system.t, system.rotor_thrust(2, :))
+plot(system.t, system.rotor_thrust(2, :),'g')
 hold on
-plot(system.t, system.rotor_thrust(3, :))
+plot(system.t, system.rotor_thrust(3, :),'b')
 hold on
-plot(system.t, system.rotor_thrust(4, :))
-y = ylabel('$f$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.rotor_thrust(4, :),'y')
+y = ylabel('$f$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-xlabel('$Time(sec)$', 'Interpreter', 'latex')
-legend('$f_{1}$', '$f_{2}$', '$f_{3}$', '$f_{4}$', 'Interpreter', 'latex')
-title('$Rotor$ $Thrust$ $(N)$', 'Interpreter', 'latex')
+xlabel('$Time(sec)$', 'Interpreter', 'latex','FontSize',20)
+legend('$f_{1}$', '$f_{2}$', '$f_{3}$', '$f_{4}$', 'Interpreter', 'latex','FontSize',20)
+title('$Rotor$ $Thrust$ $(N)$', 'Interpreter', 'latex','FontSize',20)
 
 figure(7)
 subplot(211)
-plot(system.t, system.force_moment(1, :))
-y = ylabel('$f$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.force_moment(1, :),'r')
+y = ylabel('$f$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-title('$Total$ $thrust$ $(N)$', 'Interpreter', 'latex')
+title('$Total$ $thrust$ $(N)$', 'Interpreter', 'latex','FontSize',20)
 
 subplot(212)
-plot(system.t, system.force_moment(2, :))
+plot(system.t, system.force_moment(2, :),'g')
 hold on
-plot(system.t, system.force_moment(3, :))
+plot(system.t, system.force_moment(3, :),'b')
 hold on
-plot(system.t, system.force_moment(4, :))
-y = ylabel('$M$', 'rotation', 0, 'Interpreter', 'latex');
+plot(system.t, system.force_moment(4, :),'y')
+y = ylabel('$M$', 'rotation', 0, 'Interpreter', 'latex','FontSize',20);
 set(y, 'Units', 'Normalized', 'Position', [-0.09, 0.41])
-xlabel('$Time(sec)$', 'Interpreter', 'latex')
-legend('$M_{x}$', '$M_{y}$', '$M_{z}$', 'Interpreter', 'latex')
-title('$Moment$ $Control$ $input$ $(N\cdot m)$', 'Interpreter', 'latex')
+xlabel('$Time(sec)$', 'Interpreter', 'latex','FontSize',20)
+legend('$M_{x}$', '$M_{y}$', '$M_{z}$', 'Interpreter', 'latex','FontSize',20)
+title('$Moment$ $Control$ $input$ $(N\cdot m)$', 'Interpreter', 'latex','FontSize',20)
 
