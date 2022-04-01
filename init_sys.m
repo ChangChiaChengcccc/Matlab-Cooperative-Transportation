@@ -42,8 +42,8 @@ function [iris1, iris2, payload, system] = init_sys(iris1,iris2,payload,system,d
     iris2.x(:,1) =[-0.6; 0; 0];
     
     payload.m = 0.3;
-    payload.J = [0.0031, 0, 0;
-                    0, 0.0656, 0;
+    payload.J = [0.0656, 0, 0;
+                    0, 0.0031, 0;
                     0, 0, 0.0656];
     payload.x =[0; 0; 0];
 
